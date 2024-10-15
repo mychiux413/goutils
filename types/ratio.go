@@ -2,6 +2,7 @@ package t
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -48,6 +49,16 @@ func (r Ratio) Mul(arr ...Ratio) (Ratio, error) {
 		d = d.Mul(v.Decimal())
 	}
 	return NewRatioFromDecimal(d)
+}
+func MultiplyRatios(arr ...Ratio) (Ratio, error) {
+	if len(arr) == 0 {
+		return 0, errors.New("multiply empty Ratios")
+	}
+	r := arr[0]
+	if len(arr) == 1 {
+		return r, nil
+	}
+	return r.Mul(arr[1:]...)
 }
 func (r Ratio) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(r.Decimal().String()))
