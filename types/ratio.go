@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/url"
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -85,6 +86,11 @@ func (r *Ratio) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	*r = ratio
+	return nil
+}
+
+func (r Ratio) EncodeValues(key string, v *url.Values) error {
+	v.Add(key, r.Decimal().String())
 	return nil
 }
 
