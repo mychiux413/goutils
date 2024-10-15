@@ -1,6 +1,7 @@
 package t
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -10,31 +11,42 @@ import (
 )
 
 /*
-* 1點為0.0001，即萬分之一
-* 在資料庫使用此欄位時，須使用INTEGER
-* 在資料庫不使用NUMEIC是因為這樣容量需求比較小(4 bytes)
+* 1點為0.00000001
+* 在資料庫使用此欄位時，須使用BIGINT
+* 在資料庫不使用NUMEIC是因為這樣容量需求比較小(8 bytes)
+* MaxUint64: 9223372036854775807
  */
-type Ratio uint32
+type Ratio uint64
 
 func (r Ratio) Decimal() decimal.Decimal {
-	d := decimal.NewFromUint64(uint64(r)).Shift(-4)
+	d := decimal.NewFromUint64(uint64(r)).Shift(-8)
 	return d
 }
 
-func (r Ratio) MultiplyAmount(amount Amount) Amount {
+func (r Ratio) MultiplyAmount(amount Amount) (Amount, error) {
 	result := r.Decimal().Mul(amount.Decimal)
-	return Amount{
-		Decimal: result,
-	}
+	return NewAmountFromDecimal(result)
 }
-func (r Ratio) Add(y Ratio) Ratio {
-	return r + y
-}
-func (r Ratio) Sub(y Ratio) (Ratio, error) {
-	if y > r {
-		return 0, fmt.Errorf("Sub Ratio %d - %d result NEGATIVE", r, y)
+func (r Ratio) Add(arr ...Ratio) (Ratio, error) {
+	d := r.Decimal()
+	for _, v := range arr {
+		d = d.Add(v.Decimal())
 	}
-	return r - y, nil
+	return NewRatioFromDecimal(d)
+}
+func (r Ratio) Sub(arr ...Ratio) (Ratio, error) {
+	d := r.Decimal()
+	for _, v := range arr {
+		d = d.Sub(v.Decimal())
+	}
+	return NewRatioFromDecimal(d)
+}
+func (r Ratio) Mul(arr ...Ratio) (Ratio, error) {
+	d := r.Decimal()
+	for _, v := range arr {
+		d = d.Mul(v.Decimal())
+	}
+	return NewRatioFromDecimal(d)
 }
 func (r Ratio) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(r.Decimal().String()))
@@ -54,22 +66,49 @@ func (r *Ratio) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("invalid ratio value: `%s`", d.String())
 	}
 
-	// user輸入的0.01(%) 代表 1點的Ratio，即萬分之一
-	*r = Ratio(d.Shift(2).IntPart())
+	// user輸入的0.00000001 代表 1點的Ratio
+	*r = Ratio(d.Shift(8).IntPart())
 	return nil
 }
 
-// str: 輸入最小單位0.0001，小於0.0001的值將會被忽略
+func (r *Ratio) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.Decimal().String())
+}
+func (r *Ratio) UnmarshalJSON(b []byte) error {
+	var str string
+	err := json.Unmarshal(b, &str)
+	if err != nil {
+		return err
+	}
+	ratio, err := NewRatioFromString(str)
+	if err != nil {
+		return err
+	}
+	*r = ratio
+	return nil
+}
+
+// str: 輸入最小單位0.00000001，小於0.00000001的值將會被忽略
 func NewRatioFromString(str string) (Ratio, error) {
 	d, err := decimal.NewFromString(str)
 	if err != nil {
 		return 0, err
 	}
 
-	return Ratio(d.Shift(4).IntPart()), nil
+	return NewRatioFromDecimal(d)
 }
 
-// 最小單位0.0001，小於0.0001的值將會被忽略
+// 最小單位0.00000001，小於0.00000001的值將會被忽略
+// 最終都要由NewRatioFromDecimal來生成Ratio, 才會檢查該值的合理性
 func NewRatioFromDecimal(d decimal.Decimal) (Ratio, error) {
-	return Ratio(d.Shift(4).IntPart()), nil
+	d = d.Shift(8)
+	if !d.BigInt().IsUint64() {
+		return 0, fmt.Errorf("decimal %v can not be presented as uint64", d)
+	}
+	i := d.IntPart()
+
+	if d.IsNegative() {
+		return 0, fmt.Errorf("invalid negative Ratio: %v", d)
+	}
+	return Ratio(i), nil
 }

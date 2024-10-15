@@ -9,6 +9,7 @@ import (
 	"reflect"
 
 	"github.com/99designs/gqlgen/graphql"
+	c "github.com/mychiux413/goutils/common"
 	"github.com/shopspring/decimal"
 )
 
@@ -30,7 +31,7 @@ func (a *Amount) Scan(value interface{}) error {
 	if err != nil {
 		return err
 	}
-	*a = *amount
+	*a = amount
 	return nil
 }
 
@@ -42,22 +43,31 @@ func (a Amount) MarshalGQL(w io.Writer) {
 	io.WriteString(w, a.String())
 }
 
-func (a Amount) Add(y Amount) Amount {
-	added := a.Decimal.Add(y.Decimal)
-	return Amount{
-		Decimal: added,
+func (a Amount) Add(arr ...Amount) (Amount, error) {
+	d := a.Decimal
+	for _, amount := range arr {
+		d = d.Add(amount.Decimal)
 	}
+	return NewAmountFromDecimal(d)
 }
-func (a Amount) Sub(y Amount) Amount {
-	added := a.Decimal.Sub(y.Decimal)
-	return Amount{
-		Decimal: added,
+func (a Amount) Sub(arr ...Amount) (Amount, error) {
+	d := a.Decimal
+	for _, amount := range arr {
+		d = d.Sub(amount.Decimal)
 	}
+	return NewAmountFromDecimal(d)
+}
+func (a Amount) MultiplyRatio(r Ratio) (Amount, error) {
+	return r.MultiplyAmount(a)
+}
+
+// 如果在算式裡執行了這個，肯定是哪裡寫錯了！！
+func (a Amount) Mul(y Amount) (Amount, error) {
+	return Amount{}, fmt.Errorf("%w: dont multiply Amount by Amount: %v x %v", c.ErrBadRequest, a, y)
 }
 func (a *Amount) Equal(y Amount) bool {
 	return a.Decimal.Equal(y.Decimal)
 }
-
 func (a *Amount) UnmarshalGQL(v interface{}) error {
 	str, err := graphql.UnmarshalString(v)
 	if err != nil {
@@ -68,7 +78,7 @@ func (a *Amount) UnmarshalGQL(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	*a = *amount
+	*a = amount
 	return nil
 }
 
@@ -85,7 +95,7 @@ func (a *Amount) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	*a = *amount
+	*a = amount
 	return nil
 }
 
@@ -94,18 +104,19 @@ func (a Amount) EncodeValues(key string, v *url.Values) error {
 	return nil
 }
 
-func NewAmountFromDecimal(d decimal.Decimal) *Amount {
-	return &Amount{
-		Decimal: d,
+func NewAmountFromDecimal(d decimal.Decimal) (Amount, error) {
+	if d.IsNegative() {
+		return Amount{}, fmt.Errorf("NewAmountFromDecimal recieve decimal: %v, which can not be negative", d)
 	}
-}
-
-func NewAmountFromString(str string) (*Amount, error) {
-	d, err := decimal.NewFromString(str)
-	if err != nil {
-		return nil, err
-	}
-	return &Amount{
+	return Amount{
 		Decimal: d,
 	}, nil
+}
+
+func NewAmountFromString(str string) (Amount, error) {
+	d, err := decimal.NewFromString(str)
+	if err != nil {
+		return Amount{}, err
+	}
+	return NewAmountFromDecimal(d)
 }
