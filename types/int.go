@@ -93,6 +93,15 @@ func (id *BigIDArray) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
+func (ids *BigIDArray) Includes(target BigID) bool {
+	for _, id := range *ids {
+		if id == target {
+			return true
+		}
+	}
+	return false
+}
+
 type ID uint32
 
 func (id ID) MarshalGQL(w io.Writer) {
@@ -174,6 +183,15 @@ func (id *IDArray) UnmarshalGQL(v interface{}) error {
 	}
 
 	return nil
+}
+
+func (ids *IDArray) Includes(target ID) bool {
+	for _, id := range *ids {
+		if id == target {
+			return true
+		}
+	}
+	return false
 }
 
 type SmallID uint16
@@ -259,6 +277,15 @@ func (id *SmallIDArray) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
+func (ids *SmallIDArray) Includes(target SmallID) bool {
+	for _, id := range *ids {
+		if id == target {
+			return true
+		}
+	}
+	return false
+}
+
 type TinyID uint8
 
 func (id TinyID) MarshalGQL(w io.Writer) {
@@ -340,4 +367,13 @@ func (id *TinyIDArray) UnmarshalGQL(v interface{}) error {
 	}
 
 	return nil
+}
+
+func (ids *TinyIDArray) Includes(target TinyID) bool {
+	for _, id := range *ids {
+		if id == target {
+			return true
+		}
+	}
+	return false
 }
