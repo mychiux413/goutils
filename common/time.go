@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+func PointerNow() *time.Time {
+	return PointerTime(time.Now())
+}
+
 func MustIntervalError(from time.Time, to time.Time) error {
 	if from.IsZero() {
 		return fmt.Errorf("[%w] from is zero", ErrTimeIntervalError)

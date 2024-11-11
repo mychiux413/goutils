@@ -1,6 +1,9 @@
 package c
 
-import "reflect"
+import (
+	"reflect"
+	"time"
+)
 
 func PointerBool(value bool) *bool {
 	return &value
@@ -36,6 +39,9 @@ func PointerUint(value uint) *uint {
 }
 
 func PointerInt(value int) *int {
+	return &value
+}
+func PointerTime(value time.Time) *time.Time {
 	return &value
 }
 
