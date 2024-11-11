@@ -96,3 +96,19 @@ func (ips *IPArray) Includes(ip IP) bool {
 	}
 	return false
 }
+
+func UniqueIPs(ips []IP) []IP {
+	ipMap := map[IP]bool{}
+	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+		ipMap[ip] = true
+	}
+
+	var uniques []IP
+	for ip := range ipMap {
+		uniques = append(uniques, ip)
+	}
+	return uniques
+}

@@ -19,6 +19,7 @@ var (
 	ErrForbidden                 = errors.New("forbidden")
 	ErrInsufficientBalance       = errors.New("insufficient balance")
 	ErrSignatureError            = errors.New("signature error")
+	ErrTimeIntervalError         = errors.New("bad time interval")
 	ErrServerMaintaining         = fmt.Errorf("%w: server is maintaining", ErrInternalServerError)
 	ErrInvalidInputTimeRange     = fmt.Errorf("%w: invalid time range", ErrInvalidInput)
 	ErrInvalidInputTimeFormat    = fmt.Errorf("%w: invalid time format", ErrInvalidInput)

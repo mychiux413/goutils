@@ -1,6 +1,7 @@
 package c
 
 import (
+	"encoding/json"
 	"regexp"
 	"strings"
 )
@@ -21,4 +22,22 @@ func MaybeTrimSpace(strPtrs ...*string) {
 func ClearAbnormalChars(str string) string {
 	output := abnormalCharReg.ReplaceAllString(str, "")
 	return output
+}
+
+func ToJsonString(obj any) string {
+	data, err := json.MarshalIndent(obj, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+	return string(data)
+}
+
+// 把str 變成 12****34
+func HideString(str string) string {
+	strLength := len(str)
+	if strLength <= 6 {
+		return str
+	}
+	iEnd := strLength - 4
+	return str[:2] + strings.Repeat("*", iEnd-2) + str[iEnd:]
 }
