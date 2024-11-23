@@ -41,3 +41,15 @@ func HideString(str string) string {
 	iEnd := strLength - 4
 	return str[:2] + strings.Repeat("*", iEnd-2) + str[iEnd:]
 }
+
+func UniqueStrings(strs []string) []string {
+	strMap := map[string]bool{}
+	for _, str := range strs {
+		strMap[str] = true
+	}
+	var output []string
+	for str := range strMap {
+		output = append(output, str)
+	}
+	return output
+}
