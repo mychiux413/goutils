@@ -31,6 +31,7 @@ var (
 	ErrBadRequest                = errors.New("bad request")
 	ErrNothingUpdated            = fmt.Errorf("%w: nothingUpdated", ErrBadRequest)
 	ErrNothingDeleted            = fmt.Errorf("%w: ErrNothingDeleted", ErrBadRequest)
+	ErrTokenExpired              = fmt.Errorf("token expired")
 )
 
 func ErrorsIn(err error, targets []error) bool {
