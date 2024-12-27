@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -11,14 +12,35 @@ import (
 )
 
 type AESConfig struct {
-	AESKey string `json:"aes_hex_key" yaml:"aes_hex_key"`
+	AESBase64Key string `json:"aes_base64_key" yaml:"aes_base64_key"`
+	AESHexKey    string `json:"aes_hex_key" yaml:"aes_hex_key"`
 }
 
 type AESGCM struct {
 	aead cipher.AEAD
 }
 
-func NewAESGCM(keyInHex string) (*AESGCM, error) {
+func NewAESGCMWithBase64(keyInBase64 string) (*AESGCM, error) {
+	key, err := base64.RawStdEncoding.DecodeString(keyInBase64)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AESGCM{
+		aead: aesGCM,
+	}, nil
+}
+func NewAESGCMWithHex(keyInHex string) (*AESGCM, error) {
 	key, err := hex.DecodeString(keyInHex)
 	if err != nil {
 		return nil, err
@@ -40,7 +62,10 @@ func NewAESGCM(keyInHex string) (*AESGCM, error) {
 }
 
 func (conf *AESConfig) NewAES() (*AESGCM, error) {
-	return NewAESGCM(conf.AESKey)
+	if conf.AESBase64Key != "" {
+		return NewAESGCMWithBase64(conf.AESBase64Key)
+	}
+	return NewAESGCMWithHex(conf.AESHexKey)
 }
 
 func (a *AESGCM) getNonce() ([]byte, error) {
@@ -65,7 +90,7 @@ func (a *AESGCM) EncryptString(text string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(output), nil
+	return base64.RawStdEncoding.EncodeToString(output), nil
 }
 
 func (a *AESGCM) DecryptBytes(ciphertext []byte) ([]byte, error) {
@@ -81,7 +106,7 @@ func (a *AESGCM) DecryptBytes(ciphertext []byte) ([]byte, error) {
 }
 
 func (a *AESGCM) DecryptString(cipherText string) (string, error) {
-	cipherData, err := hex.DecodeString(cipherText)
+	cipherData, err := base64.RawStdEncoding.DecodeString(cipherText)
 	if err != nil {
 		return "", err
 	}
@@ -130,12 +155,12 @@ func (a *AESGCM) EncryptStringWithExpired(plainstring string, expiredAt time.Tim
 	if err != nil {
 		return "", err
 	}
-	return hex.EncodeToString(ciphertext), nil
+	return base64.RawStdEncoding.EncodeToString(ciphertext), nil
 
 }
 
 func (a *AESGCM) DecryptStringWithExpired(cipherString string) (string, error) {
-	ciphertext, err := hex.DecodeString(cipherString)
+	ciphertext, err := base64.RawStdEncoding.DecodeString(cipherString)
 	if err != nil {
 		return "", err
 	}
@@ -162,4 +187,11 @@ func RandomHex(byteSize int) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
+}
+func RandomBase64(byteSize int) (string, error) {
+	bytes, err := RandomBytes(byteSize)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawStdEncoding.EncodeToString(bytes), nil
 }

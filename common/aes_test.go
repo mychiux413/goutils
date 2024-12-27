@@ -15,11 +15,44 @@ import (
 
 func TestAES(t *testing.T) {
 	assert := assert.New(t)
-	h, err := c.RandomHex(32)
+
+	// Hex
+	b, err := c.RandomHex(32)
 	if !assert.Nil(err) {
 		return
 	}
-	a, err := c.NewAESGCM(h)
+
+	conf := c.AESConfig{
+		AESBase64Key: b,
+	}
+
+	_, err = conf.NewAES()
+	assert.NotNil(err)
+
+	conf = c.AESConfig{
+		AESHexKey: b,
+	}
+
+	_, err = conf.NewAES()
+	assert.Nil(err)
+
+	// Base 64
+	b, err = c.RandomBase64(32)
+	if !assert.Nil(err) {
+		return
+	}
+
+	conf = c.AESConfig{
+		AESHexKey: b,
+	}
+	_, err = conf.NewAES()
+	assert.NotNil(err)
+
+	conf = c.AESConfig{
+		AESBase64Key: b,
+	}
+
+	a, err := conf.NewAES()
 	if !assert.Nil(err) {
 		return
 	}
