@@ -10,40 +10,36 @@ import (
 	"time"
 
 	c "github.com/mychiux413/goutils/common"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAES(t *testing.T) {
+	assert := assert.New(t)
 	h, err := c.RandomHex(32)
-	if err != nil {
-		t.Error(err)
+	if !assert.Nil(err) {
 		return
 	}
 	a, err := c.NewAESGCM(h)
-	if err != nil {
-		t.Error(err)
+	if !assert.Nil(err) {
 		return
 	}
 	for i := 0; i < 100; i++ {
 		dataSize, err := rand.Int(rand.Reader, big.NewInt(10000))
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		secretData, err := c.RandomBytes(int(dataSize.Int64()))
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 
 		cipherData, err := a.EncryptBytes(secretData)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 
 		decryptedSecretData, err := a.DecryptBytes(cipherData)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		if !bytes.Equal(decryptedSecretData, secretData) {
@@ -52,8 +48,7 @@ func TestAES(t *testing.T) {
 
 		before := time.Now().Add(-time.Second)
 		cipherData, err = a.EncryptBytesWithExpired(secretData, before)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		_, err = a.DecryptBytesWithExpired(cipherData)
@@ -64,8 +59,7 @@ func TestAES(t *testing.T) {
 
 		after := time.Now().Add(time.Second)
 		cipherData, err = a.EncryptBytesWithExpired(secretData, after)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		decryptedSecretData, err = a.DecryptBytesWithExpired(cipherData)
@@ -80,14 +74,12 @@ func TestAES(t *testing.T) {
 		secretHex := hex.EncodeToString(secretData)
 
 		cipherSecret, err := a.EncryptString(secretHex)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 
 		decryptedSecretHex, err := a.DecryptString(cipherSecret)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		if decryptedSecretHex != secretHex {
@@ -97,8 +89,7 @@ func TestAES(t *testing.T) {
 
 		before = time.Now().Add(-time.Second)
 		cipherSecret, err = a.EncryptStringWithExpired(secretHex, before)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		_, err = a.DecryptStringWithExpired(cipherSecret)
@@ -109,8 +100,7 @@ func TestAES(t *testing.T) {
 
 		after = time.Now().Add(time.Second)
 		cipherSecret, err = a.EncryptStringWithExpired(secretHex, after)
-		if err != nil {
-			t.Error(err)
+		if !assert.Nil(err) {
 			return
 		}
 		decryptedSecretHex, err = a.DecryptStringWithExpired(cipherSecret)
