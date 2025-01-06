@@ -24,3 +24,16 @@ func (t TextArray) Value() (driver.Value, error) {
 	output := strings.Join(t, ",")
 	return fmt.Sprintf("{%s}", output), nil
 }
+
+// 回傳不重複的Text
+func (arr *TextArray) Unique() TextArray {
+	var output TextArray
+	mp := map[string]bool{}
+	for _, str := range *arr {
+		mp[str] = true
+	}
+	for id := range mp {
+		output = append(output, id)
+	}
+	return output
+}

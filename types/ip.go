@@ -97,6 +97,19 @@ func (ips *IPArray) Includes(ip IP) bool {
 	return false
 }
 
+// 回傳不重複的IP
+func (ips *IPArray) Unique() IPArray {
+	var output IPArray
+	mp := map[IP]bool{}
+	for _, ip := range *ips {
+		mp[ip] = true
+	}
+	for id := range mp {
+		output = append(output, id)
+	}
+	return output
+}
+
 func UniqueIPs(ips []IP) []IP {
 	ipMap := map[IP]bool{}
 	for _, ip := range ips {

@@ -102,6 +102,19 @@ func (ids *BigIDArray) Includes(target BigID) bool {
 	return false
 }
 
+// 回傳不重複的ID
+func (ids *BigIDArray) Unique() BigIDArray {
+	var output BigIDArray
+	mp := map[BigID]bool{}
+	for _, id := range *ids {
+		mp[id] = true
+	}
+	for id := range mp {
+		output = append(output, id)
+	}
+	return output
+}
+
 type ID uint32
 
 func (id ID) MarshalGQL(w io.Writer) {
@@ -192,6 +205,19 @@ func (ids *IDArray) Includes(target ID) bool {
 		}
 	}
 	return false
+}
+
+// 回傳不重複的ID
+func (ids *IDArray) Unique() IDArray {
+	var output IDArray
+	mp := map[ID]bool{}
+	for _, id := range *ids {
+		mp[id] = true
+	}
+	for id := range mp {
+		output = append(output, id)
+	}
+	return output
 }
 
 type SmallID uint16
@@ -286,6 +312,19 @@ func (ids *SmallIDArray) Includes(target SmallID) bool {
 	return false
 }
 
+// 回傳不重複的ID
+func (ids *SmallIDArray) Unique() SmallIDArray {
+	var output SmallIDArray
+	mp := map[SmallID]bool{}
+	for _, id := range *ids {
+		mp[id] = true
+	}
+	for id := range mp {
+		output = append(output, id)
+	}
+	return output
+}
+
 type TinyID uint8
 
 func (id TinyID) MarshalGQL(w io.Writer) {
@@ -376,4 +415,17 @@ func (ids *TinyIDArray) Includes(target TinyID) bool {
 		}
 	}
 	return false
+}
+
+// 回傳不重複的ID
+func (ids *TinyIDArray) Unique() TinyIDArray {
+	var output TinyIDArray
+	mp := map[TinyID]bool{}
+	for _, id := range *ids {
+		mp[id] = true
+	}
+	for id := range mp {
+		output = append(output, id)
+	}
+	return output
 }
