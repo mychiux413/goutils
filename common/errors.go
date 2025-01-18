@@ -32,6 +32,7 @@ var (
 	ErrNothingUpdated            = fmt.Errorf("%w: nothingUpdated", ErrBadRequest)
 	ErrNothingDeleted            = fmt.Errorf("%w: ErrNothingDeleted", ErrBadRequest)
 	ErrTokenExpired              = fmt.Errorf("token expired")
+	ErrAccountIsInactive         = fmt.Errorf("account is inactive")
 )
 
 func ErrorsIn(err error, targets []error) bool {
