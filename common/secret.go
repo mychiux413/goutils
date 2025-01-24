@@ -28,17 +28,28 @@ type Secreter interface {
 }
 
 type RequiredSetting struct {
-	MerchantCode bool
-	Account      bool
-	Password     bool
-	Key1         bool
-	Key2         bool
-	Key3         bool
-	Key4         bool
-	Endpoint1    bool
-	Endpoint2    bool
-	Endpoint3    bool
-	Endpoint4    bool
+	MerchantCode     bool
+	MerchantCodeDesc string
+	Account          bool
+	AccountDesc      string
+	Password         bool
+	PasswordDesc     string
+	Key1             bool
+	Key1Desc         string
+	Key2             bool
+	Key2Desc         string
+	Key3             bool
+	Key3Desc         string
+	Key4             bool
+	Key4Desc         string
+	Endpoint1        bool
+	Endpoint1Desc    string
+	Endpoint2        bool
+	Endpoint2Desc    string
+	Endpoint3        bool
+	Endpoint3Desc    string
+	Endpoint4        bool
+	Endpoint4Desc    string
 }
 
 type SecretRequiredSetting struct {
