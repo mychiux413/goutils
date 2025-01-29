@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"io"
+	"math"
 	"strconv"
 	"strings"
 
@@ -428,4 +429,22 @@ func (ids *TinyIDArray) Unique() TinyIDArray {
 		output = append(output, id)
 	}
 	return output
+}
+
+func MarshalUint8(value uint8) graphql.Marshaler {
+	return graphql.WriterFunc(func(w io.Writer) {
+		io.WriteString(w, fmt.Sprintf("%d", value))
+	})
+}
+
+func UnmarshalUint8(v interface{}) (uint8, error) {
+	ui, err := graphql.UnmarshalUint(v)
+	if err != nil {
+		return 0, err
+	}
+	if ui > math.MaxUint8 {
+		return 0, fmt.Errorf("invalid Uint8: %d", ui)
+	}
+
+	return uint8(ui), nil
 }
