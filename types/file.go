@@ -28,7 +28,11 @@ func UnmarshalFileData(v interface{}) ([]byte, error) {
 	}
 	if len(str) > 30 && strings.Contains(str[:30], "base64,") {
 		// 相容 data:image/jpeg;base64,<BASE64> 的版本
-		str = strings.Split(str, "base64,")[1]
+		s := strings.SplitN(str, "base64,", 2)
+		if len(s) != 2 {
+			return nil, fmt.Errorf("split base64, but got split length: %d", len(s))
+		}
+		str = s[1]
 	}
 	return base64.StdEncoding.DecodeString(str)
 }
