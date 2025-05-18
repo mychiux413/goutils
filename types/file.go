@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 )
@@ -24,6 +25,10 @@ func UnmarshalFileData(v interface{}) ([]byte, error) {
 	str, ok := v.(string)
 	if !ok {
 		return nil, fmt.Errorf("file must be strings in base64")
+	}
+	if len(str) > 30 && strings.Contains(str[:30], "base64,") {
+		// 相容 data:image/jpeg;base64,<BASE64> 的版本
+		str = strings.Split(str, "base64,")[1]
 	}
 	return base64.StdEncoding.DecodeString(str)
 }
