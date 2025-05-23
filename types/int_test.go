@@ -1,6 +1,7 @@
 package t_test
 
 import (
+	"fmt"
 	"testing"
 
 	tt "github.com/mychiux413/goutils/types"
@@ -22,4 +23,20 @@ func TestUniques(t *testing.T) {
 	assert.Len(arr5.Unique(), 3)
 	arr6 := tt.TextArray{"127.0.0.1", "127.0.0.1", "127.0.0.2", "127.0.0.2", "127.0.0.3", "127.0.0.3"}
 	assert.Len(arr6.Unique(), 3)
+}
+
+func TestIntString(t *testing.T) {
+	assert := assert.New(t)
+	arr1 := tt.BigIDArray{1, 2, 3, 1, 2, 3}
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%v", arr1))
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%#v", arr1))
+	arr2 := tt.IDArray{1, 2, 3, 1, 2, 3}
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%v", arr2))
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%#v", arr2))
+	arr3 := tt.SmallIDArray{1, 2, 3, 1, 2, 3}
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%v", arr3))
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%#v", arr3))
+	arr4 := tt.TinyIDArray{1, 2, 3, 1, 2, 3}
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%v", arr4))
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%#v", arr4))
 }

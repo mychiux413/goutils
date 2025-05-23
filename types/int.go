@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"slices"
+
 	"github.com/99designs/gqlgen/graphql"
 )
 
@@ -30,6 +32,12 @@ func (id *BigID) UnmarshalGQL(v interface{}) error {
 	*id = BigID(i)
 
 	return nil
+}
+func (id BigID) String() string {
+	return fmt.Sprintf("%d", id)
+}
+func (id BigID) GoString() string {
+	return fmt.Sprintf("%d", id)
 }
 
 type BigIDArray []BigID
@@ -93,14 +101,23 @@ func (id *BigIDArray) UnmarshalGQL(v interface{}) error {
 
 	return nil
 }
+func (ids BigIDArray) String() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.String())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+func (ids BigIDArray) GoString() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.GoString())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
 
 func (ids *BigIDArray) Includes(target BigID) bool {
-	for _, id := range *ids {
-		if id == target {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(*ids, target)
 }
 
 // 回傳不重複的ID
@@ -135,6 +152,13 @@ func (id *ID) UnmarshalGQL(v interface{}) error {
 	*id = ID(i)
 
 	return nil
+}
+
+func (id ID) String() string {
+	return fmt.Sprintf("%d", id)
+}
+func (id ID) GoString() string {
+	return fmt.Sprintf("%d", id)
 }
 
 type IDArray []ID
@@ -199,13 +223,23 @@ func (id *IDArray) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (ids *IDArray) Includes(target ID) bool {
-	for _, id := range *ids {
-		if id == target {
-			return true
-		}
+func (ids IDArray) String() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.String())
 	}
-	return false
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+func (ids IDArray) GoString() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.GoString())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+
+func (ids *IDArray) Includes(target ID) bool {
+	return slices.Contains(*ids, target)
 }
 
 // 回傳不重複的ID
@@ -240,6 +274,13 @@ func (id *SmallID) UnmarshalGQL(v interface{}) error {
 	*id = SmallID(i)
 
 	return nil
+}
+
+func (id SmallID) String() string {
+	return fmt.Sprintf("%d", id)
+}
+func (id SmallID) GoString() string {
+	return fmt.Sprintf("%d", id)
 }
 
 type SmallIDArray []SmallID
@@ -304,13 +345,23 @@ func (id *SmallIDArray) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (ids *SmallIDArray) Includes(target SmallID) bool {
-	for _, id := range *ids {
-		if id == target {
-			return true
-		}
+func (ids SmallIDArray) String() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.String())
 	}
-	return false
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+func (ids SmallIDArray) GoString() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.GoString())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+
+func (ids *SmallIDArray) Includes(target SmallID) bool {
+	return slices.Contains(*ids, target)
 }
 
 // 回傳不重複的ID
@@ -345,6 +396,13 @@ func (id *TinyID) UnmarshalGQL(v interface{}) error {
 	*id = TinyID(i)
 
 	return nil
+}
+
+func (id TinyID) String() string {
+	return fmt.Sprintf("%d", id)
+}
+func (id TinyID) GoString() string {
+	return fmt.Sprintf("%d", id)
 }
 
 type TinyIDArray []TinyID
@@ -409,13 +467,23 @@ func (id *TinyIDArray) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-func (ids *TinyIDArray) Includes(target TinyID) bool {
-	for _, id := range *ids {
-		if id == target {
-			return true
-		}
+func (ids TinyIDArray) String() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.String())
 	}
-	return false
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+func (ids TinyIDArray) GoString() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.GoString())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+
+func (ids *TinyIDArray) Includes(target TinyID) bool {
+	return slices.Contains(*ids, target)
 }
 
 // 回傳不重複的ID
