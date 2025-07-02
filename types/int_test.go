@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	tt "github.com/mychiux413/goutils/types"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,6 +24,15 @@ func TestUniques(t *testing.T) {
 	assert.Len(arr5.Unique(), 3)
 	arr6 := tt.TextArray{"127.0.0.1", "127.0.0.1", "127.0.0.2", "127.0.0.2", "127.0.0.3", "127.0.0.3"}
 	assert.Len(arr6.Unique(), 3)
+	arr7 := tt.HugeIDArray{
+		tt.HugeID(decimal.NewFromInt(1)),
+		tt.HugeID(decimal.NewFromInt(2)),
+		tt.HugeID(decimal.NewFromInt(3)),
+		tt.HugeID(decimal.NewFromInt(1)),
+		tt.HugeID(decimal.NewFromInt(2)),
+		tt.HugeID(decimal.NewFromInt(3)),
+	}
+	assert.Len(arr7.Unique(), 3)
 }
 
 func TestIntString(t *testing.T) {
@@ -39,4 +49,14 @@ func TestIntString(t *testing.T) {
 	arr4 := tt.TinyIDArray{1, 2, 3, 1, 2, 3}
 	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%v", arr4))
 	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%#v", arr4))
+	arr7 := tt.HugeIDArray{
+		tt.HugeID(decimal.NewFromInt(1)),
+		tt.HugeID(decimal.NewFromInt(2)),
+		tt.HugeID(decimal.NewFromInt(3)),
+		tt.HugeID(decimal.NewFromInt(1)),
+		tt.HugeID(decimal.NewFromInt(2)),
+		tt.HugeID(decimal.NewFromInt(3)),
+	}
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%v", arr7))
+	assert.Equal("[1,2,3,1,2,3]", fmt.Sprintf("%#v", arr7))
 }

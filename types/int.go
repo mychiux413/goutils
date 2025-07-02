@@ -5,13 +5,172 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 
 	"slices"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/shopspring/decimal"
 )
+
+// 在資料庫裡，需使用NUMERIC型別
+type HugeID decimal.Decimal
+
+// 如果有計算用途，可以轉成Deciaml
+func (id HugeID) Decimal() decimal.Decimal {
+	return decimal.Decimal(id)
+}
+
+func (id HugeID) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(decimal.Decimal(id).String()))
+}
+
+func (a HugeID) IsValid() bool {
+	return a.Decimal().IsInteger()
+}
+
+func (a *HugeID) Scan(value any) error {
+
+	str, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("HugeID should be string, but got %s", reflect.TypeOf(value))
+	}
+	dec, err := decimal.NewFromString(str)
+	if err != nil {
+		return err
+	}
+	if !dec.IsInteger() {
+		return fmt.Errorf("HugeID.Scan error: invalid HugeID: %s", str)
+	}
+	*a = HugeID(dec)
+	return nil
+}
+
+func (a HugeID) Value() (driver.Value, error) {
+	return a.String(), nil
+}
+
+func (id *HugeID) UnmarshalGQL(v any) error {
+	str, err := graphql.UnmarshalID(v)
+	if err != nil {
+		return err
+	}
+
+	dec, err := decimal.NewFromString(str)
+	if err != nil {
+		return fmt.Errorf("invalid HugeID: %s", str)
+	}
+	if !dec.IsInteger() {
+		return fmt.Errorf("invalid HugeID: %s", str)
+	}
+	*id = HugeID(dec)
+
+	return nil
+}
+func (id HugeID) String() string {
+	return decimal.Decimal(id).String()
+}
+func (id HugeID) GoString() string {
+	return decimal.Decimal(id).String()
+}
+
+type HugeIDArray []HugeID
+
+func (ids *HugeIDArray) Scan(value any) error {
+	strs, err := sqlStrToStrings(value)
+	if err != nil {
+		return err
+	}
+	for _, str := range strs {
+		dec, err := decimal.NewFromString(str)
+		if err != nil {
+			return err
+		}
+		if !dec.IsInteger() {
+			return fmt.Errorf("HugeIDArray.Scan error: invalid HugeID: %s", str)
+		}
+		*ids = append(*ids, HugeID(dec))
+	}
+	return nil
+}
+
+func (ids HugeIDArray) Value() (driver.Value, error) {
+	if len(ids) == 0 {
+		return "{}", nil
+	}
+	var strs []string
+	for _, id := range ids {
+		strs = append(strs, id.String())
+	}
+	output := strings.Join(strs, ",")
+	return fmt.Sprintf("{%s}", output), nil
+}
+
+func (arr HugeIDArray) MarshalGQL(w io.Writer) {
+	var strs []string
+	for _, id := range arr {
+		strs = append(strs, strconv.Quote(id.String()))
+	}
+	io.WriteString(w, fmt.Sprintf("[%s]", strings.Join(strs, ",")))
+}
+
+func (id *HugeIDArray) UnmarshalGQL(v any) error {
+	value, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("HugeIDArray must be a string")
+	}
+	if len(value) < 2 {
+		return fmt.Errorf("invalid array: %s", value)
+	}
+
+	value = value[1 : len(value)-1]
+	for _, str := range strings.Split(value, ",") {
+		str, err := strconv.Unquote(str)
+		if err != nil {
+			return err
+		}
+		dec, err := decimal.NewFromString(str)
+		if err != nil {
+			return err
+		}
+		*id = append(*id, HugeID(dec))
+	}
+
+	return nil
+}
+func (ids HugeIDArray) String() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.String())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+func (ids HugeIDArray) GoString() string {
+	var arr []string
+	for _, id := range ids {
+		arr = append(arr, id.GoString())
+	}
+	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
+}
+
+func (ids *HugeIDArray) Includes(target HugeID) bool {
+	return slices.Contains(*ids, target)
+}
+
+// 回傳不重複的ID
+func (ids *HugeIDArray) Unique() HugeIDArray {
+	var output HugeIDArray
+	mp := map[string]HugeID{}
+	for _, id := range *ids {
+		mp[id.String()] = id
+	}
+	for _, id := range mp {
+		output = append(output, id)
+	}
+	return output
+}
 
 type BigID uint64
 
@@ -19,7 +178,7 @@ func (id BigID) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(strconv.Itoa(int(id))))
 }
 
-func (id *BigID) UnmarshalGQL(v interface{}) error {
+func (id *BigID) UnmarshalGQL(v any) error {
 	str, err := graphql.UnmarshalID(v)
 	if err != nil {
 		return err
@@ -42,7 +201,7 @@ func (id BigID) GoString() string {
 
 type BigIDArray []BigID
 
-func (ids *BigIDArray) Scan(value interface{}) error {
+func (ids *BigIDArray) Scan(value any) error {
 	strs, err := sqlStrToStrings(value)
 	if err != nil {
 		return err
@@ -77,7 +236,7 @@ func (arr BigIDArray) MarshalGQL(w io.Writer) {
 	io.WriteString(w, fmt.Sprintf("[%s]", strings.Join(strs, ",")))
 }
 
-func (id *BigIDArray) UnmarshalGQL(v interface{}) error {
+func (id *BigIDArray) UnmarshalGQL(v any) error {
 	value, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("BigIDArray must be a string")
@@ -139,7 +298,7 @@ func (id ID) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(strconv.Itoa(int(id))))
 }
 
-func (id *ID) UnmarshalGQL(v interface{}) error {
+func (id *ID) UnmarshalGQL(v any) error {
 	str, err := graphql.UnmarshalID(v)
 	if err != nil {
 		return err
@@ -163,7 +322,7 @@ func (id ID) GoString() string {
 
 type IDArray []ID
 
-func (ids *IDArray) Scan(value interface{}) error {
+func (ids *IDArray) Scan(value any) error {
 	strs, err := sqlStrToStrings(value)
 	if err != nil {
 		return err
@@ -198,7 +357,7 @@ func (arr IDArray) MarshalGQL(w io.Writer) {
 	io.WriteString(w, fmt.Sprintf("[%s]", strings.Join(strs, ",")))
 }
 
-func (id *IDArray) UnmarshalGQL(v interface{}) error {
+func (id *IDArray) UnmarshalGQL(v any) error {
 	value, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("IDArray must be a string")
@@ -261,7 +420,7 @@ func (id SmallID) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(strconv.Itoa(int(id))))
 }
 
-func (id *SmallID) UnmarshalGQL(v interface{}) error {
+func (id *SmallID) UnmarshalGQL(v any) error {
 	str, err := graphql.UnmarshalID(v)
 	if err != nil {
 		return err
@@ -285,7 +444,7 @@ func (id SmallID) GoString() string {
 
 type SmallIDArray []SmallID
 
-func (ids *SmallIDArray) Scan(value interface{}) error {
+func (ids *SmallIDArray) Scan(value any) error {
 	strs, err := sqlStrToStrings(value)
 	if err != nil {
 		return err
@@ -320,7 +479,7 @@ func (arr SmallIDArray) MarshalGQL(w io.Writer) {
 	io.WriteString(w, fmt.Sprintf("[%s]", strings.Join(strs, ",")))
 }
 
-func (id *SmallIDArray) UnmarshalGQL(v interface{}) error {
+func (id *SmallIDArray) UnmarshalGQL(v any) error {
 	value, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("IDArray must be a string")
@@ -383,7 +542,7 @@ func (id TinyID) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(strconv.Itoa(int(id))))
 }
 
-func (id *TinyID) UnmarshalGQL(v interface{}) error {
+func (id *TinyID) UnmarshalGQL(v any) error {
 	str, err := graphql.UnmarshalID(v)
 	if err != nil {
 		return err
@@ -407,7 +566,7 @@ func (id TinyID) GoString() string {
 
 type TinyIDArray []TinyID
 
-func (ids *TinyIDArray) Scan(value interface{}) error {
+func (ids *TinyIDArray) Scan(value any) error {
 	strs, err := sqlStrToStrings(value)
 	if err != nil {
 		return err
@@ -442,7 +601,7 @@ func (arr TinyIDArray) MarshalGQL(w io.Writer) {
 	io.WriteString(w, fmt.Sprintf("[%s]", strings.Join(strs, ",")))
 }
 
-func (id *TinyIDArray) UnmarshalGQL(v interface{}) error {
+func (id *TinyIDArray) UnmarshalGQL(v any) error {
 	value, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("IDArray must be a string")
@@ -505,7 +664,7 @@ func MarshalUint8(value uint8) graphql.Marshaler {
 	})
 }
 
-func UnmarshalUint8(v interface{}) (uint8, error) {
+func UnmarshalUint8(v any) (uint8, error) {
 	ui, err := graphql.UnmarshalUint(v)
 	if err != nil {
 		return 0, err
