@@ -18,6 +18,21 @@ import (
 // 在資料庫裡，需使用NUMERIC型別
 type HugeID decimal.Decimal
 
+func NewHugeIDFromDecimal(d decimal.Decimal) (HugeID, error) {
+	output := HugeID(d)
+	if !output.IsValid() {
+		return HugeID{}, fmt.Errorf("invalid HugeID: %s", d.String())
+	}
+	return HugeID(d), nil
+}
+func NewHugeIDFromString(str string) (HugeID, error) {
+	dec, err := decimal.NewFromString(str)
+	if err != nil {
+		return HugeID{}, err
+	}
+	return NewHugeIDFromDecimal(dec)
+}
+
 // 如果有計算用途，可以轉成Deciaml
 func (id HugeID) Decimal() decimal.Decimal {
 	return decimal.Decimal(id)
@@ -28,7 +43,11 @@ func (id HugeID) MarshalGQL(w io.Writer) {
 }
 
 func (a HugeID) IsValid() bool {
-	return a.Decimal().IsInteger()
+	dec := a.Decimal()
+	if !dec.IsInteger() {
+		return false
+	}
+	return !dec.IsNegative()
 }
 
 func (a *HugeID) Scan(value any) error {
@@ -37,14 +56,11 @@ func (a *HugeID) Scan(value any) error {
 	if !ok {
 		return fmt.Errorf("HugeID should be string, but got %s", reflect.TypeOf(value))
 	}
-	dec, err := decimal.NewFromString(str)
+	id, err := NewHugeIDFromString(str)
 	if err != nil {
 		return err
 	}
-	if !dec.IsInteger() {
-		return fmt.Errorf("HugeID.Scan error: invalid HugeID: %s", str)
-	}
-	*a = HugeID(dec)
+	*a = id
 	return nil
 }
 
@@ -58,14 +74,11 @@ func (id *HugeID) UnmarshalGQL(v any) error {
 		return err
 	}
 
-	dec, err := decimal.NewFromString(str)
+	hugeID, err := NewHugeIDFromString(str)
 	if err != nil {
-		return fmt.Errorf("invalid HugeID: %s", str)
+		return err
 	}
-	if !dec.IsInteger() {
-		return fmt.Errorf("invalid HugeID: %s", str)
-	}
-	*id = HugeID(dec)
+	*id = hugeID
 
 	return nil
 }
@@ -84,14 +97,11 @@ func (ids *HugeIDArray) Scan(value any) error {
 		return err
 	}
 	for _, str := range strs {
-		dec, err := decimal.NewFromString(str)
+		hugeID, err := NewHugeIDFromString(str)
 		if err != nil {
 			return err
 		}
-		if !dec.IsInteger() {
-			return fmt.Errorf("HugeIDArray.Scan error: invalid HugeID: %s", str)
-		}
-		*ids = append(*ids, HugeID(dec))
+		*ids = append(*ids, hugeID)
 	}
 	return nil
 }
@@ -131,11 +141,11 @@ func (id *HugeIDArray) UnmarshalGQL(v any) error {
 		if err != nil {
 			return err
 		}
-		dec, err := decimal.NewFromString(str)
+		hugeID, err := NewHugeIDFromString(str)
 		if err != nil {
 			return err
 		}
-		*id = append(*id, HugeID(dec))
+		*id = append(*id, hugeID)
 	}
 
 	return nil
@@ -155,8 +165,18 @@ func (ids HugeIDArray) GoString() string {
 	return fmt.Sprintf("[%s]", strings.Join(arr, ","))
 }
 
+func (ids HugeIDArray) StringArray() []string {
+	var strs []string
+	for _, id := range ids {
+		strs = append(strs, id.String())
+	}
+	return strs
+
+}
+
 func (ids *HugeIDArray) Includes(target HugeID) bool {
-	return slices.Contains(*ids, target)
+	arr := ids.StringArray()
+	return slices.Contains(arr, target.String())
 }
 
 // 回傳不重複的ID
