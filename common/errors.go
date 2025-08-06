@@ -20,6 +20,8 @@ var (
 	ErrInsufficientBalance       = errors.New("insufficient balance")
 	ErrSignatureError            = errors.New("signature error")
 	ErrTimeIntervalError         = errors.New("bad time interval")
+	ErrAPIError                  = errors.New("api error")
+	ErrAPIUnsupported            = fmt.Errorf("%w: api unsupported", ErrAPIError)
 	ErrServerMaintaining         = fmt.Errorf("%w: server is maintaining", ErrInternalServerError)
 	ErrInvalidInputTimeRange     = fmt.Errorf("%w: invalid time range", ErrInvalidInput)
 	ErrInvalidInputTimeFormat    = fmt.Errorf("%w: invalid time format", ErrInvalidInput)
