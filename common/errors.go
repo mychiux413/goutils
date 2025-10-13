@@ -35,6 +35,7 @@ var (
 	ErrNothingDeleted            = fmt.Errorf("%w: ErrNothingDeleted", ErrBadRequest)
 	ErrTokenExpired              = fmt.Errorf("token expired")
 	ErrAccountIsInactive         = fmt.Errorf("account is inactive")
+	ErrOverRange                 = errors.New("over range")
 )
 
 func ErrorsIn(err error, targets []error) bool {

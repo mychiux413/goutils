@@ -1,5 +1,7 @@
 package t
 
+import "slices"
+
 type EnvironmentPhase string
 
 const (
@@ -19,11 +21,5 @@ func EnvironmentPhases() []EnvironmentPhase {
 }
 
 func (e EnvironmentPhase) IsValid() bool {
-	for _, env := range EnvironmentPhases() {
-		if env == e {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(EnvironmentPhases(), e)
 }
