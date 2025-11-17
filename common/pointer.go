@@ -65,9 +65,20 @@ func RemoveNilValue(data map[string]interface{}) {
 	}
 }
 
-func ValueOrDefault(value any, defaultValue any) any {
-	if value == nil {
+// ValueOrDefault 是一個泛型函式，它接受一個指標 T 和一個預設值 T。
+// 如果指標為 nil，則回傳預設值。
+// 如果指標不為 nil，則回傳指標所指向的值。
+//
+// 範例:
+//
+//	strPtr := PointerString("hello")
+//	ValueOrDefault(strPtr, "world") // 回傳 "hello"
+//
+//	var nilStrPtr *string
+//	ValueOrDefault(nilStrPtr, "world") // 回傳 "world"
+func ValueOrDefault[T any](value *T, defaultValue T) T {
+	if value == nil || reflect.ValueOf(value).IsNil() {
 		return defaultValue
 	}
-	return value
+	return *value
 }
