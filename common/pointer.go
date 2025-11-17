@@ -64,3 +64,10 @@ func RemoveNilValue(data map[string]interface{}) {
 		}
 	}
 }
+
+func ValueOrDefault(value any, defaultValue any) any {
+	if value == nil {
+		return defaultValue
+	}
+	return value
+}
