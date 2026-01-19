@@ -81,8 +81,12 @@ func (p *Permission) Can(canPermissions ...CanPermission) bool {
 - 如果什麼都不會改變, 則回傳nil
 */
 func (managerPermission *Permission) UpdateConstraint(source, target Permission) *Permission {
+	// root can do anything
+	if managerPermission.Can(PERM_CAN_ROOT) {
+		return &target
+	}
+	// nobody can set ROOT
 	if target.Can(PERM_CAN_ROOT) {
-		// nobody can set ROOT
 		target -= Permission(PERM_CAN_ROOT)
 	}
 	wannaChanges := source ^ target
