@@ -41,7 +41,7 @@ func (a Flow) Value() (driver.Value, error) {
 }
 
 func (a Flow) MarshalGQL(w io.Writer) {
-	io.WriteString(w, a.String())
+	graphql.MarshalString(a.String()).MarshalGQL(w)
 }
 
 func (a Flow) Add(arr ...Flow) (Flow, error) {

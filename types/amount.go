@@ -40,7 +40,7 @@ func (a Amount) Value() (driver.Value, error) {
 }
 
 func (a Amount) MarshalGQL(w io.Writer) {
-	io.WriteString(w, a.String())
+	graphql.MarshalString(a.String()).MarshalGQL(w)
 }
 
 func (a Amount) Add(arr ...Amount) (Amount, error) {
