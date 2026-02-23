@@ -9,23 +9,42 @@ import (
 type Permission uint8
 type CanPermission uint8
 
+// 讀權限
 const PERM_CAN_GET CanPermission = 0x01
-const PERM_CAN_LIST CanPermission = 0x02
+
+// 前端顯示權限
+const PERM_CAN_VIEW CanPermission = 0x02
+
+// 新增權限
 const PERM_CAN_CREATE CanPermission = 0x04
+
+// 更新權限
 const PERM_CAN_UPDATE CanPermission = 0x08
+
+// 刪除權限
 const PERM_CAN_DELETE CanPermission = 0x10
+
+// 預留權限1
 const PERM_CAN_OTHER1 CanPermission = 0x20
+
+// 預留權限2
 const PERM_CAN_OTHER2 CanPermission = 0x40
+
+// 最高權限
 const PERM_CAN_ROOT CanPermission = 0x80
 
 // 有隨便一個權限都好
-const PERM_ANY Permission = Permission(PERM_CAN_GET | PERM_CAN_LIST | PERM_CAN_CREATE | PERM_CAN_UPDATE | PERM_CAN_DELETE | PERM_CAN_OTHER1 | PERM_CAN_OTHER2)
+const PERM_ANY Permission = Permission(PERM_CAN_GET | PERM_CAN_VIEW | PERM_CAN_CREATE | PERM_CAN_UPDATE | PERM_CAN_DELETE | PERM_CAN_OTHER1 | PERM_CAN_OTHER2)
+
+// 最高權限+所有權限
 const PERM_ROOT_ALL Permission = Permission(PERM_CAN_ROOT) | PERM_ANY
+
+// 沒有任何權限
 const PERM_NONE Permission = 0x00
 
 type PermissionInHuman struct {
 	Get    bool
-	List   bool
+	View   bool
 	Create bool
 	Update bool
 	Delete bool
@@ -45,7 +64,7 @@ func NewPermission(canPermissions ...CanPermission) Permission {
 func (p *Permission) ToPermissionInHuman() *PermissionInHuman {
 	return &PermissionInHuman{
 		Get:    p.Can(PERM_CAN_GET),
-		List:   p.Can(PERM_CAN_LIST),
+		View:   p.Can(PERM_CAN_VIEW),
 		Create: p.Can(PERM_CAN_CREATE),
 		Update: p.Can(PERM_CAN_UPDATE),
 		Delete: p.Can(PERM_CAN_DELETE),
@@ -104,8 +123,8 @@ func (c *PermissionInHuman) ToPermission() Permission {
 	if c.Get {
 		canPermissions = append(canPermissions, PERM_CAN_GET)
 	}
-	if c.List {
-		canPermissions = append(canPermissions, PERM_CAN_LIST)
+	if c.View {
+		canPermissions = append(canPermissions, PERM_CAN_VIEW)
 	}
 	if c.Create {
 		canPermissions = append(canPermissions, PERM_CAN_CREATE)

@@ -13,7 +13,7 @@ func TestPermissions(t *testing.T) {
 	ph := c.PermissionInHuman{Get: true}
 	p := ph.ToPermission()
 	assert.True(p.Can(c.PERM_CAN_GET))
-	assert.False(p.Can(c.PERM_CAN_LIST))
+	assert.False(p.Can(c.PERM_CAN_VIEW))
 	assert.False(p.Can(c.PERM_CAN_UPDATE))
 	assert.False(p.Can(c.PERM_CAN_DELETE))
 	assert.False(p.Can(c.PERM_CAN_OTHER1))
@@ -42,7 +42,7 @@ func BenchmarkPermissions(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < 10000; j++ {
 			p.Can(c.PERM_CAN_GET)
-			p.Can(c.PERM_CAN_LIST)
+			p.Can(c.PERM_CAN_VIEW)
 			p.Can(c.PERM_CAN_CREATE, c.PERM_CAN_GET)
 			p.Can(c.PERM_CAN_UPDATE, c.PERM_CAN_GET)
 			p.Can(c.PERM_CAN_DELETE, c.PERM_CAN_GET)
@@ -56,8 +56,8 @@ func BenchmarkPermissions(b *testing.B) {
 
 func TestUpdatePermissionConstraint(t *testing.T) {
 	assert := assert.New(t)
-	manager := c.NewPermission(c.PERM_CAN_CREATE, c.PERM_CAN_LIST, c.PERM_CAN_UPDATE)
-	source := c.NewPermission(c.PERM_CAN_CREATE, c.PERM_CAN_LIST, c.PERM_CAN_UPDATE, c.PERM_CAN_DELETE)
+	manager := c.NewPermission(c.PERM_CAN_CREATE, c.PERM_CAN_VIEW, c.PERM_CAN_UPDATE)
+	source := c.NewPermission(c.PERM_CAN_CREATE, c.PERM_CAN_VIEW, c.PERM_CAN_UPDATE, c.PERM_CAN_DELETE)
 	target := c.PERM_NONE
 	expected := c.NewPermission(c.PERM_CAN_DELETE)
 
